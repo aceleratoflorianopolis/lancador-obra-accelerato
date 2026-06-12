@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lançador de Custos — Acelerato Floripa</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c26;
+    --card: #1e2332;
+    --border: #2a3048;
+    --accent: #f59e0b;
+    --accent2: #3b82f6;
+    --success: #10b981;
+    --danger: #ef4444;
+    --text: #e8eaf0;
+    --muted: #7a8299;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header .logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  header h1 { font-size: 16px; font-weight: 600; }
+  header span { font-size: 12px; color: var(--muted); }
+
+  .container { max-width: 680px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Steps */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 32px;
+  }
+  .step {
+    display: flex; align-items: center; gap: 8px;
+    flex: 1;
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--muted);
+    font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .step.active .step-num { background: var(--accent); color: #000; }
+  .step.done .step-num { background: var(--success); color: #fff; }
+  .step-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .step.active .step-label { color: var(--text); font-weight: 500; }
+  .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 8px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: 16px;
+  }
+
+  /* Upload Zone */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(245,158,11,.04);
+  }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-icon { font-size: 40px; margin-bottom: 12px; }
+  .upload-zone h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+  .upload-zone p { font-size: 13px; color: var(--muted); }
+
+  /* Preview */
+  .preview-wrap {
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    position: relative;
+    background: #000;
+  }
+  .preview-wrap img { width: 100%; max-height: 280px; object-fit: contain; display: block; }
+  .preview-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,.7);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px; color: var(--muted);
+  }
+
+  /* AI Analysis block */
+  .ai-block {
+    background: rgba(59,130,246,.06);
+    border: 1px solid rgba(59,130,246,.2);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .ai-block .ai-label {
+    font-size: 11px; font-weight: 600; color: var(--accent2);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ai-block .ai-label::before { content: '✦'; }
+
+  /* Form Fields */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field label {
+    display: block;
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .05em;
+    margin-bottom: 6px;
+  }
+  .field label .ai-tag {
+    display: inline-block;
+    background: rgba(59,130,246,.15);
+    color: var(--accent2);
+    font-size: 9px; font-weight: 700;
+    padding: 1px 5px; border-radius: 3px;
+    margin-left: 5px; vertical-align: middle;
+    text-transform: uppercase;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent2);
+  }
+  .field input.ai-filled {
+    border-color: rgba(59,130,246,.4);
+    background: rgba(59,130,246,.04);
+  }
+  .field select option { background: var(--surface); }
+  .field textarea { resize: vertical; min-height: 72px; }
+
+  /* Parcelamento */
+  .parcelas-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .parcelas-rows { display: flex; flex-direction: column; gap: 8px; }
+  .parcela-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr 32px;
+    gap: 8px;
+    align-items: center;
+  }
+  .parcela-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--muted);
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 4px;
+  }
+  .parcela-row input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    padding: 9px 10px;
+    outline: none;
+    transition: border-color .15s;
+    width: 100%;
+  }
+  .parcela-row input:focus { border-color: var(--accent2); }
+  .parcela-del {
+    width: 32px; height: 32px;
+    background: rgba(239,68,68,.1);
+    border: 1px solid rgba(239,68,68,.2);
+    border-radius: 6px;
+    color: var(--danger);
+    font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+    flex-shrink: 0;
+  }
+  .parcela-del:hover { background: rgba(239,68,68,.2); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none;
+    transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #f6aa1a; }
+  .btn-primary:disabled { background: #6b5a2e; color: #9a8050; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover { border-color: var(--muted); }
+  .btn-ghost { background: transparent; color: var(--accent2); font-size: 12px; padding: 8px 12px; }
+  .btn-ghost:hover { background: rgba(59,130,246,.08); }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { background: #0ea572; }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+  /* Loading spinner */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(0,0,0,.2);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Status / toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+    z-index: 999;
+    animation: slideUp .25s ease;
+    max-width: 340px;
+  }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } }
+  .toast.success { border-color: var(--success); }
+  .toast.error { border-color: var(--danger); }
+
+  /* Success screen */
+  .success-screen {
+    text-align: center;
+    padding: 48px 24px;
+  }
+  .success-icon { font-size: 56px; margin-bottom: 16px; }
+  .success-screen h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .success-screen p { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+  .result-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-align: left;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .result-row {
+    display: flex; gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    align-items: flex-start;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-row .rk { color: var(--muted); width: 120px; flex-shrink: 0; font-size: 11px; padding-top: 2px; }
+  .result-row .rv { color: var(--text); font-weight: 500; word-break: break-all; }
+
+  /* Section divider */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0;
+  }
+  .toggle-row span { font-size: 14px; }
+  .toggle {
+    position: relative; width: 44px; height: 24px;
+    cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: var(--border); border-radius: 12px;
+    transition: .2s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--accent2); }
+  .toggle-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    background: #fff; border-radius: 50%;
+    transition: .2s;
+    pointer-events: none;
+  }
+  .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+  /* Hint */
+  .hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+  /* Drive folder display */
+  .drive-path {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  .drive-path .icon { font-size: 16px; }
+
+  #page-upload, #page-form, #page-success { display: none; }
+  #page-upload.active, #page-form.active, #page-success.active { display: block; }
+
+  .analyzing-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 100;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+  }
+  .analyzing-overlay.show { display: flex; }
+  .analyzing-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 40px;
+    text-align: center;
+  }
+  .analyzing-box .big-spin {
+    width: 48px; height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  .analyzing-box h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .analyzing-box p { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏗️</div>
+  <div>
+    <h1>Lançador de Custos</h1>
+    <span>Acelerato Florianópolis</span>
+  </div>
+</header>
+
+<!-- Analyzing overlay -->
+<div class="analyzing-overlay" id="analyzing-overlay">
+  <div class="analyzing-box">
+    <div class="big-spin"></div>
+    <h3 id="analyzing-title">Analisando comprovante…</h3>
+    <p id="analyzing-sub">A IA está extraindo os dados da imagem</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Steps bar -->
+  <div class="steps">
+    <div class="step active" id="step1">
+      <div class="step-num">1</div>
+      <div class="step-label">Comprovante</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step2">
+      <div class="step-num">2</div>
+      <div class="step-label">Dados</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step3">
+      <div class="step-num">3</div>
+      <div class="step-label">Confirmar</div>
+    </div>
+  </div>
+
+  <!-- PAGE 1: Upload -->
+  <div id="page-upload" class="active">
+    <div class="card">
+      <div class="card-title">📎 Comprovante / Nota Fiscal</div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept="image/*,application/pdf" />
+        <div class="upload-icon">📷</div>
+        <h3>Foto ou PDF do comprovante</h3>
+        <p>Clique ou arraste aqui<br>JPG, PNG, PDF — qualquer tamanho</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📁 Pasta no Google Drive</div>
+      <div class="field">
+        <label>ID da pasta onde os comprovantes serão salvos</label>
+        <div style="display:flex; gap:8px; align-items:flex-start">
+          <div style="flex:1">
+            <input type="text" id="folder-id" placeholder="Ex: 1zn-ZxNIGBpAIadqQb8GNcP0rauUrQRqF" />
+            <div class="hint">Abra a pasta no Drive, copie o ID da URL: drive.google.com/drive/folders/<strong>ID_AQUI</strong></div>
+          </div>
+          <button class="btn btn-secondary" onclick="salvarFolderId()" id="btn-salvar-folder" style="flex-shrink:0; margin-top:0; white-space:nowrap">
+            💾 Salvar
+          </button>
+        </div>
+        <div id="folder-saved-msg" style="display:none; font-size:11px; color:var(--success); margin-top:6px">✓ ID salvo — será carregado automaticamente na próxima vez</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: Form -->
+  <div id="page-form">
+
+    <div class="preview-wrap" id="preview-wrap" style="display:none">
+      <img id="preview-img" src="" alt="comprovante" />
+      <div class="preview-badge" id="preview-badge">comprovante.jpg</div>
+    </div>
+
+    <div class="ai-block" id="ai-block" style="display:none">
+      <div class="ai-label">Dados extraídos pela IA</div>
+      <div id="ai-summary" style="font-size:13px; color:var(--muted); line-height:1.6"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Dados do lançamento</div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Data da Compra <span class="ai-tag">IA</span></label>
+          <input type="date" id="f-data-compra" />
+        </div>
+        <div class="field">
+          <label>Valor Total (R$) <span class="ai-tag">IA</span></label>
+          <input type="number" id="f-valor" step="0.01" placeholder="0,00" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Fornecedor <span class="ai-tag">IA</span></label>
+          <input type="text" id="f-fornecedor" placeholder="Nome do fornecedor" />
+        </div>
+        <div class="field">
+          <label>Centro de Custo</label>
+          <select id="f-cc">
+            <option value="">— selecionar —</option>
+            <option>Terraplanagem</option>
+            <option>Containers / Estruturas</option>
+            <option>Máquina de Lavagem (ISTOBAL/Shinewash)</option>
+            <option>Mão de Obra - Pedreiro/Encanador</option>
+            <option>Mão de Obra - Eletricista</option>
+            <option>Mão de Obra - Pintor</option>
+            <option>Mão de Obra - Serralheiro</option>
+            <option>Alimentação (Marmitas/Lanches)</option>
+            <option>Concreto/Cimento</option>
+            <option>Estrutura Metálica</option>
+            <option>Fretes/Transportes</option>
+            <option>Impostos/Taxas</option>
+            <option>Infraestrutura Administrativa</option>
+            <option>Locações</option>
+            <option>Máquinas Acessórias</option>
+            <option>Marketing/Publicidade</option>
+            <option>Material Elétrico</option>
+            <option>Material Hidráulico</option>
+            <option>Material Geral</option>
+            <option>Material Serralheria</option>
+            <option>Diesel/Gasolina</option>
+            <option>Projeto</option>
+            <option>Estudo de terreno</option>
+            <option>IPTU</option>
+            <option>Execução Obra</option>
+            <option>Poço artesiano</option>
+            <option>Fechamento terreno</option>
+            <option>Deslocamento</option>
+            <option>Combustivel</option>
+            <option>Hospedagem</option>
+            <option>Subestação</option>
+            <option>Aluguel</option>
+            <option>Aluguel maquina</option>
+            <option>Luz</option>
+            <option>Aluguel Terreno</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Subcategoria <span class="ai-tag">IA</span></label>
+          <input type="text" id="f-sub" placeholder="Ex: Tinta galvanizada, areia..." />
+        </div>
+        <div class="field">
+          <label>Forma de Pagamento</label>
+          <select id="f-pgto">
+            <option value="">— selecionar —</option>
+            <option>PIX</option>
+            <option>Boleto</option>
+            <option>Cartão BTG</option>
+            <option>Cartão BB</option>
+            <option>Cartão de crédito Sócio</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Pago por</label>
+          <select id="f-pago-por">
+            <option value="">— selecionar —</option>
+            <option>Fundo Comum</option>
+            <option>Lucas</option>
+            <option>Acelerato</option>
+            <option>Diego</option>
+            <option>Paulo</option>
+            <option>Lucas/Paulo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Descrição <span class="ai-tag">IA</span></label>
+          <input type="text" id="f-desc" placeholder="Breve descrição" />
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <div class="field">
+          <label>Observações</label>
+          <input type="text" id="f-obs" placeholder="Opcional" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Parcelamento -->
+    <div class="card">
+      <div class="parcelas-header">
+        <div class="card-title" style="margin:0">💳 Parcelamento</div>
+        <div style="display:flex; gap:8px; align-items:center">
+          <label class="toggle" title="Ativar parcelamento">
+            <input type="checkbox" id="parcela-toggle" onchange="toggleParcelas()" />
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+
+      <div id="parcelas-section" style="display:none; margin-top:16px">
+        <div class="form-row three" style="margin-bottom:14px">
+          <div class="field">
+            <label>Total de Parcelas</label>
+            <input type="number" id="num-parcelas" min="2" max="60" value="2" onchange="buildParcelas()" />
+          </div>
+          <div class="field">
+            <label>Vencimento 1ª Parcela</label>
+            <input type="date" id="first-venc" onchange="buildParcelas()" />
+          </div>
+          <div class="field">
+            <label>Intervalo</label>
+            <select id="intervalo" onchange="buildParcelas()">
+              <option value="30">Mensal (30d)</option>
+              <option value="7">Semanal</option>
+              <option value="1">Diário</option>
+            </select>
+          </div>
+        </div>
+        <div class="parcelas-rows" id="parcelas-rows"></div>
+        <button class="btn btn-ghost" onclick="addParcela()" style="margin-top:10px">+ adicionar parcela</button>
+      </div>
+
+      <div id="sem-parcela" style="padding: 12px 0; font-size:13px; color:var(--muted)">
+        Pagamento à vista — uma linha será lançada.
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-lancar" onclick="lancar()">
+        🚀 Lançar na planilha
+      </button>
+      <button class="btn btn-secondary" onclick="voltarUpload()">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- PAGE 3: Sucesso -->
+  <div id="page-success">
+    <div class="success-screen">
+      <div class="success-icon">✅</div>
+      <h2>Lançamento concluído!</h2>
+      <p id="success-msg">As linhas foram adicionadas à Base de Dados.</p>
+      <div class="result-list" id="result-list"></div>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn btn-primary" onclick="novoLancamento()">+ Novo lançamento</button>
+        <a id="drive-link" href="#" target="_blank" class="btn btn-secondary" style="text-decoration:none">📁 Ver no Drive</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Toast -->
+<div class="toast" id="toast" style="display:none"></div>
+
+<script>
+// ─── Persistent storage ──────────────────────────────────────────────────────
+async function loadSavedSettings() {
+  try {
+    const result = await window.storage.get('folder_id');
+    if (result?.value) {
+      document.getElementById('folder-id').value = result.value;
+      document.getElementById('folder-saved-msg').style.display = 'block';
+      document.getElementById('folder-saved-msg').textContent = '✓ ID carregado automaticamente';
+    }
+  } catch(e) { /* não existe ainda */ }
+}
+
+async function salvarFolderId() {
+  const id = document.getElementById('folder-id').value.trim();
+  if (!id) { showToast('Cole o ID da pasta primeiro', 'error'); return; }
+  try {
+    await window.storage.set('folder_id', id);
+    const msg = document.getElementById('folder-saved-msg');
+    msg.style.display = 'block';
+    msg.textContent = '✓ ID salvo — será carregado automaticamente na próxima vez';
+    showToast('Pasta salva com sucesso!');
+  } catch(e) {
+    showToast('Erro ao salvar: ' + e.message, 'error');
+  }
+}
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let uploadedFile = null;
+let uploadedBase64 = null;
+let uploadedMime = null;
+let driveFileId = null;
+let driveFileUrl = null;
+
+// ─── Nav helpers ─────────────────────────────────────────────────────────────
+function goTo(page) {
+  document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const steps = {upload: 1, form: 2, success: 3};
+  const n = steps[page] || 1;
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('step' + i);
+    el.classList.remove('active','done');
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  }
+}
+
+function voltarUpload() { goTo('upload'); }
+function novoLancamento() {
+  uploadedFile = null; uploadedBase64 = null; driveFileId = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('ai-block').style.display = 'none';
+  resetForm();
+  goTo('upload');
+}
+
+// ─── Upload & preview ─────────────────────────────────────────────────────────
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  uploadedFile = file;
+  uploadedMime = file.type;
+  const reader = new FileReader();
+  reader.onload = e => {
+    uploadedBase64 = e.target.result.split(',')[1];
+    const preview = document.getElementById('preview-img');
+    if (file.type.startsWith('image/')) {
+      preview.src = e.target.result;
+      document.getElementById('preview-wrap').style.display = 'block';
+    } else {
+      document.getElementById('preview-wrap').style.display = 'none';
+    }
+    document.getElementById('preview-badge').textContent = file.name;
+    processarComIA();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── IA Analysis ─────────────────────────────────────────────────────────────
+async function processarComIA() {
+  showOverlay('Analisando comprovante…', 'A IA está extraindo os dados');
+  goTo('form');
+
+  const hoje = new Date().toISOString().split('T')[0];
+  const prompt = `Analise este comprovante de pagamento/nota fiscal de obra.
+Extraia EXATAMENTE os seguintes campos em JSON (sem markdown, apenas JSON puro):
+{
+  "data_compra": "YYYY-MM-DD ou null se não encontrar",
+  "valor": numero_decimal ou null,
+  "fornecedor": "nome do fornecedor/empresa" ou null,
+  "descricao": "descrição curta do que foi comprado/pago" ou null,
+  "subcategoria": "tipo de material/serviço específico" ou null,
+  "sugestao_centro_custo": "um dos seguintes ou null: Terraplanagem, Containers / Estruturas, Mão de Obra - Pedreiro/Encanador, Mão de Obra - Eletricista, Mão de Obra - Pintor, Mão de Obra - Serralheiro, Alimentação (Marmitas/Lanches), Concreto/Cimento, Estrutura Metálica, Fretes/Transportes, Impostos/Taxas, Infraestrutura Administrativa, Locações, Máquinas Acessórias, Marketing/Publicidade, Material Elétrico, Material Hidráulico, Material Geral, Material Serralheria, Diesel/Gasolina, Projeto, Estudo de terreno, IPTU, Execução Obra, Poço artesiano, Fechamento terreno, Deslocamento, Combustivel, Hospedagem, Subestação, Aluguel, Aluguel maquina, Luz, Aluguel Terreno",
+  "forma_pagamento": "PIX, Boleto, Cartão BTG, Cartão BB ou null"
+}
+Hoje é ${hoje}. Se a data não aparecer claramente, use null. Responda SOMENTE com o JSON.`;
+
+  try {
+    const body = {
+      model: "claude-sonnet-4-6",
+      max_tokens: 1000,
+      messages: [{
+        role: "user",
+        content: uploadedMime === 'application/pdf'
+          ? [
+              { type: "document", source: { type: "base64", media_type: "application/pdf", data: uploadedBase64 } },
+              { type: "text", text: prompt }
+            ]
+          : [
+              { type: "image", source: { type: "base64", media_type: uploadedMime, data: uploadedBase64 } },
+              { type: "text", text: prompt }
+            ]
+      }]
+    };
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '{}';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const ai = JSON.parse(clean);
+
+    // Preenche campos
+    if (ai.data_compra) { document.getElementById('f-data-compra').value = ai.data_compra; document.getElementById('f-data-compra').classList.add('ai-filled'); }
+    if (ai.valor) { document.getElementById('f-valor').value = ai.valor; document.getElementById('f-valor').classList.add('ai-filled'); }
+    if (ai.fornecedor) { document.getElementById('f-fornecedor').value = ai.fornecedor; document.getElementById('f-fornecedor').classList.add('ai-filled'); }
+    if (ai.descricao) { document.getElementById('f-desc').value = ai.descricao; document.getElementById('f-desc').classList.add('ai-filled'); }
+    if (ai.subcategoria) { document.getElementById('f-sub').value = ai.subcategoria; document.getElementById('f-sub').classList.add('ai-filled'); }
+    if (ai.sugestao_centro_custo) {
+      const sel = document.getElementById('f-cc');
+      for (let o of sel.options) { if (o.value === ai.sugestao_centro_custo) { sel.value = ai.sugestao_centro_custo; break; } }
+    }
+    if (ai.forma_pagamento) document.getElementById('f-pgto').value = ai.forma_pagamento;
+
+    // Resumo
+    const parts = [];
+    if (ai.fornecedor) parts.push(`<strong>${ai.fornecedor}</strong>`);
+    if (ai.valor) parts.push(`R$ ${Number(ai.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})}`);
+    if (ai.descricao) parts.push(ai.descricao);
+    if (ai.data_compra) parts.push(ai.data_compra.split('-').reverse().join('/'));
+    document.getElementById('ai-summary').innerHTML = parts.join(' · ');
+    document.getElementById('ai-block').style.display = 'block';
+
+  } catch(e) {
+    console.error(e);
+    showToast('Não foi possível analisar a imagem automaticamente. Preencha manualmente.', 'error');
+  }
+
+  hideOverlay();
+}
+
+// ─── Parcelamento ─────────────────────────────────────────────────────────────
+function toggleParcelas() {
+  const on = document.getElementById('parcela-toggle').checked;
+  document.getElementById('parcelas-section').style.display = on ? 'block' : 'none';
+  document.getElementById('sem-parcela').style.display = on ? 'none' : 'block';
+  if (on) buildParcelas();
+}
+
+function buildParcelas() {
+  const n = parseInt(document.getElementById('num-parcelas').value) || 2;
+  const firstVenc = document.getElementById('first-venc').value;
+  const intervalo = parseInt(document.getElementById('intervalo').value) || 30;
+  const valor = parseFloat(document.getElementById('f-valor').value) || 0;
+  const parcPorParcela = valor > 0 ? (valor / n).toFixed(2) : '';
+
+  const container = document.getElementById('parcelas-rows');
+  container.innerHTML = '';
+
+  for (let i = 0; i < n; i++) {
+    let venc = '';
+    if (firstVenc) {
+      const d = new Date(firstVenc + 'T00:00:00');
+      d.setDate(d.getDate() + i * intervalo);
+      venc = d.toISOString().split('T')[0];
+    }
+    const row = document.createElement('div');
+    row.className = 'parcela-row';
+    row.dataset.idx = i;
+    row.innerHTML = `
+      <div class="parcela-num">${i+1}/${n}</div>
+      <input type="date" class="parc-venc" value="${venc}" placeholder="Vencimento" />
+      <input type="number" class="parc-valor" step="0.01" value="${parcPorParcela}" placeholder="Valor (R$)" />
+      ${n > 1 ? `<button class="parcela-del" onclick="delParcela(this)">×</button>` : '<div></div>'}
+    `;
+    container.appendChild(row);
+  }
+  updateNumeros();
+}
+
+function addParcela() {
+  const rows = document.querySelectorAll('.parcela-row');
+  const n = rows.length + 1;
+  const container = document.getElementById('parcelas-rows');
+  const row = document.createElement('div');
+  row.className = 'parcela-row';
+  row.innerHTML = `
+    <div class="parcela-num">${n}/${n}</div>
+    <input type="date" class="parc-venc" />
+    <input type="number" class="parc-valor" step="0.01" placeholder="Valor (R$)" />
+    <button class="parcela-del" onclick="delParcela(this)">×</button>
+  `;
+  container.appendChild(row);
+  updateNumeros();
+}
+
+function delParcela(btn) {
+  btn.closest('.parcela-row').remove();
+  updateNumeros();
+}
+
+function updateNumeros() {
+  const rows = document.querySelectorAll('.parcela-row');
+  const total = rows.length;
+  rows.forEach((r, i) => {
+    r.querySelector('.parcela-num').textContent = `${i+1}/${total}`;
+  });
+}
+
+// ─── Lancar ───────────────────────────────────────────────────────────────────
+async function lancar() {
+  const dataCompra = document.getElementById('f-data-compra').value;
+  const valor = document.getElementById('f-valor').value;
+  const fornecedor = document.getElementById('f-fornecedor').value;
+  const cc = document.getElementById('f-cc').value;
+  const sub = document.getElementById('f-sub').value;
+  const desc = document.getElementById('f-desc').value;
+  const pgto = document.getElementById('f-pgto').value;
+  const pagoPor = document.getElementById('f-pago-por').value;
+  const obs = document.getElementById('f-obs').value;
+  const folderId = document.getElementById('folder-id').value.trim();
+
+  if (!valor || !fornecedor || !cc) {
+    showToast('Preencha pelo menos: Valor, Fornecedor e Centro de Custo', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-lancar');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Processando…';
+
+  // Build parcelas array
+  const parcelado = document.getElementById('parcela-toggle').checked;
+  let linhas = [];
+  if (parcelado) {
+    const rows = document.querySelectorAll('.parcela-row');
+    const total = rows.length;
+    rows.forEach((r, i) => {
+      const venc = r.querySelector('.parc-venc').value;
+      const v = r.querySelector('.parc-valor').value;
+      linhas.push({
+        data_compra: dataCompra,
+        data_pgto: venc,
+        cc, sub, desc, fornecedor,
+        valor: parseFloat(v) || 0,
+        pgto, pago_por: pagoPor,
+        obs: obs ? `${obs} — Parcela ${i+1}/${total}` : `Parcela ${i+1}/${total}`
+      });
+    });
+  } else {
+    linhas.push({
+      data_compra: dataCompra,
+      data_pgto: dataCompra,
+      cc, sub, desc, fornecedor,
+      valor: parseFloat(valor),
+      pgto, pago_por: pagoPor, obs
+    });
+  }
+
+  // Nome do arquivo no Drive
+  const nomeArquivo = buildNomeArquivo(valor, desc || sub, dataCompra, parcelado ? linhas.length : null);
+
+  showOverlay('Fazendo upload do comprovante…', 'Enviando para o Google Drive');
+
+  try {
+    // Step 1: Upload to Drive via Claude API + MCP
+    if (uploadedBase64 && folderId) {
+      await uploadToDrive(nomeArquivo, folderId);
+    }
+
+    showOverlay('Lançando na planilha…', 'Adicionando linhas à Base de Dados');
+
+    // Step 2: Add rows to spreadsheet
+    await addRowsToSheet(linhas, nomeArquivo);
+
+    hideOverlay();
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Lançar na planilha';
+
+    // Show success
+    showSuccess(linhas, nomeArquivo);
+
+  } catch(e) {
+    hideOverlay();
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Lançar na planilha';
+    showToast('Erro: ' + e.message, 'error');
+    console.error(e);
+  }
+}
+
+function buildNomeArquivo(valor, desc, data, parcelas) {
+  const v = parseFloat(valor).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const d = desc ? desc.replace(/[^a-zA-Z0-9À-ú\s]/g, '').trim().replace(/\s+/g, '_').substring(0, 30) : '';
+  const dt = data ? data.split('-').reverse().join('') : '';
+  const parc = parcelas ? `_${parcelas}x` : '';
+  const ext = uploadedFile ? ('.' + uploadedFile.name.split('.').pop()) : '.jpg';
+  return `${v}_${d}_${dt}${parc}${ext}`.replace(/^_+|_+$/g, '');
+}
+
+// Upload via Claude API with Drive MCP
+async function uploadToDrive(fileName, folderId) {
+  const prompt = `Upload the provided file to Google Drive.
+- File name: ${fileName}
+- Parent folder ID: ${folderId}
+- The file content is provided as base64 in this message.
+After uploading, return ONLY a JSON like: {"fileId": "...", "viewUrl": "..."}`;
+
+  const body = {
+    model: "claude-sonnet-4-6",
+    max_tokens: 1000,
+    mcp_servers: [{ type: "url", url: "https://drivemcp.googleapis.com/mcp/v1", name: "gdrive" }],
+    messages: [{
+      role: "user",
+      content: uploadedMime === 'application/pdf'
+        ? [
+            { type: "document", source: { type: "base64", media_type: "application/pdf", data: uploadedBase64 } },
+            { type: "text", text: prompt }
+          ]
+        : [
+            { type: "image", source: { type: "base64", media_type: uploadedMime, data: uploadedBase64 } },
+            { type: "text", text: prompt }
+          ]
+    }]
+  };
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+
+  // Extract fileId from response
+  const texts = data.content?.filter(b => b.type === 'text').map(b => b.text).join('\n') || '';
+  try {
+    const match = texts.match(/\{[^}]*"fileId"[^}]*\}/);
+    if (match) {
+      const parsed = JSON.parse(match[0]);
+      driveFileId = parsed.fileId;
+      driveFileUrl = parsed.viewUrl || `https://drive.google.com/file/d/${driveFileId}/view`;
+    }
+  } catch(e) {}
+
+  // Try to extract file ID from tool results
+  if (!driveFileId) {
+    const toolResults = data.content?.filter(b => b.type === 'mcp_tool_result') || [];
+    for (const tr of toolResults) {
+      const txt = tr.content?.[0]?.text || '';
+      const m = txt.match(/"id"\s*:\s*"([^"]+)"/);
+      if (m) { driveFileId = m[1]; driveFileUrl = `https://drive.google.com/file/d/${driveFileId}/view`; break; }
+    }
+  }
+}
+
+// Add rows to sheet via Claude API + Drive MCP
+async function addRowsToSheet(linhas, nomeArquivo) {
+  const SHEET_FILE_ID = '1cKxmniYn_aLdYY5M3TPJCj64IBFtbZQV';
+  const linkComp = driveFileUrl || nomeArquivo;
+
+  // Build description of rows to add
+  const rowsDesc = linhas.map((l, i) => {
+    const mesAno = l.data_pgto ? (() => {
+      const d = new Date(l.data_pgto + 'T00:00:00');
+      return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
+    })() : '';
+    return `Row ${i+1}: Data_Compra=${l.data_compra || ''} | Data_Pagamento=${l.data_pgto || ''} | Centro_Custo=${l.cc} | Subcategoria=${l.sub || ''} | Descricao=${l.desc || ''} | Fornecedor=${l.fornecedor} | Valor=${l.valor} | Forma_Pgto=${l.pgto || ''} | Pago_Por=${l.pago_por || ''} | Obs=${l.obs || ''} | Comprovante=${i===0 ? linkComp : ''} | Mes_Ano=${mesAno}`;
+  }).join('\n');
+
+  const prompt = `You have access to Google Drive. Open the spreadsheet with file ID: ${SHEET_FILE_ID}
+
+The spreadsheet has a sheet called "Base de Dados". The columns (row 1 headers) are:
+A=Data da Compra, B=Data do Pagamento, C=Centro de Custo, D=Subcategoria, E=Descrição, F=Fornecedor, G=Valor (R$), H=Forma de Pagamento, I=Pago por, J=Observações, K=Comprovante (link), L=Comprovante 2, M=Mês/Ano
+
+Add the following rows at the END of the existing data (after the last non-empty row in column F):
+${rowsDesc}
+
+For dates, use format DD/MM/YYYY. For Valor, use the numeric value.
+After adding, return ONLY: {"success": true, "rows_added": ${linhas.length}}`;
+
+  const body = {
+    model: "claude-sonnet-4-6",
+    max_tokens: 2000,
+    mcp_servers: [{ type: "url", url: "https://drivemcp.googleapis.com/mcp/v1", name: "gdrive" }],
+    messages: [{ role: "user", content: prompt }]
+  };
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || 'Erro na API');
+}
+
+// ─── Success screen ──────────────────────────────────────────────────────────
+function showSuccess(linhas, nomeArquivo) {
+  const total = linhas.reduce((s, l) => s + l.valor, 0);
+  const list = document.getElementById('result-list');
+  list.innerHTML = `
+    <div class="result-row"><div class="rk">Linhas lançadas</div><div class="rv">${linhas.length} linha${linhas.length>1?'s':''}</div></div>
+    <div class="result-row"><div class="rk">Fornecedor</div><div class="rv">${linhas[0].fornecedor}</div></div>
+    <div class="result-row"><div class="rk">Centro de Custo</div><div class="rv">${linhas[0].cc}</div></div>
+    <div class="result-row"><div class="rk">Valor total</div><div class="rv">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+    <div class="result-row"><div class="rk">Comprovante</div><div class="rv">${nomeArquivo}</div></div>
+    ${driveFileUrl ? `<div class="result-row"><div class="rk">Link Drive</div><div class="rv"><a href="${driveFileUrl}" target="_blank" style="color:var(--accent2)">${driveFileUrl.substring(0,50)}…</a></div></div>` : ''}
+  `;
+  document.getElementById('success-msg').textContent = `${linhas.length} linha${linhas.length>1?'s foram adicionadas':' foi adicionada'} à Base de Dados.`;
+  if (driveFileUrl) document.getElementById('drive-link').href = driveFileUrl;
+  goTo('success');
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function resetForm() {
+  ['f-data-compra','f-valor','f-fornecedor','f-cc','f-sub','f-desc','f-pgto','f-pago-por','f-obs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('ai-filled'); }
+  });
+  document.getElementById('parcela-toggle').checked = false;
+  toggleParcelas();
+}
+
+function showOverlay(title, sub) {
+  document.getElementById('analyzing-title').textContent = title;
+  document.getElementById('analyzing-sub').textContent = sub;
+  document.getElementById('analyzing-overlay').classList.add('show');
+}
+function hideOverlay() { document.getElementById('analyzing-overlay').classList.remove('show'); }
+
+// Init
+window.addEventListener('load', loadSavedSettings);
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'success' ? '✅ ' : '⚠️ ') + msg;
+  t.className = 'toast ' + type;
+  t.style.display = 'flex';
+  setTimeout(() => t.style.display = 'none', 4000);
+}
+</script>
+</body>
+</html>
